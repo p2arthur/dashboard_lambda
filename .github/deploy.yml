@@ -1,0 +1,31 @@
+name: Run Lambda Dashboard Update
+
+on:
+  push:
+    branches:
+      - main # Trigger on every push to the main branch
+
+jobs:
+  trigger_lambda_url:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout Repository (Optional, but good practice)
+        uses: actions/checkout@v4
+
+      - name: 🚀 Trigger Public Lambda Function URL
+        env:
+          # Store the Lambda Function URL in GitHub Secrets for security
+          LAMBDA_URL: ${{ secrets.LAMBDA_FUNCTION_URL }}
+
+        run: |
+          # Use curl to make a simple POST request to the public URL.
+          # The Lambda will execute, generate the HTML, and update S3.
+          # The -s flag makes it silent; -o /dev/null discards the response.
+          echo "Attempting to invoke Lambda function..."
+          curl -s -X POST "${{ env.LAMBDA_URL }}" -o /dev/null
+
+          # Optional: Check for a successful response (Status 200)
+          # A more robust check might capture and inspect the HTTP status code
+          # but for simplicity, we assume success if curl completes without error.
+          echo "Lambda URL triggered. Check S3 and CloudWatch for confirmation."
